@@ -1,0 +1,609 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-order",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        -16
+      ],
+      "id": "d374f84f-676f-480a-8d59-eb8cc8f40faf",
+      "name": "Webhook",
+      "webhookId": "6270e064-e7d3-44ea-bb0d-9c0a8ad8f50b"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1prqMsrRB-f5FLtrk5JTtuWtbctpzSflgaaTSPn0iQKw",
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1prqMsrRB-f5FLtrk5JTtuWtbctpzSflgaaTSPn0iQKw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1prqMsrRB-f5FLtrk5JTtuWtbctpzSflgaaTSPn0iQKw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        -16
+      ],
+      "id": "5d83cfdf-2766-4ce0-8939-07f2c0308be8",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2FZ91ow8j2RNgZWK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// جلب البيانات بشكل آمن\nconst webhookData = $('Webhook').first().json;\nconst order = webhookData.body || webhookData;\n\nconst inventory = $input.all();\n\n// اسم المنتج الجاي من الطلب\nconst requestedProduct = order.product ? order.product.toString().toLowerCase().trim() : '';\n\n// البحث عن المنتج في الشيت\nconst product = inventory.find(item => {\n  const sheetProduct = item.json.Product ? item.json.Product.toString().toLowerCase().trim() : '';\n  return sheetProduct === requestedProduct;\n});\n\n// لو المنتج مش موجود، بنرجع بيانات خفيفة عشان الـ If Node تعتبرها False من غير ما تشد Error\nif (!product) {\n  return [{\n    json: {\n      found: false,\n      message: \"Product not found in inventory\",\n      requestedQuantity: Number(order.quantity || 1)\n    }\n  }];\n}\n\n// لو لقاه، نحسب الكميات عادي\nconst currentStock = Number(product.json.Stock || 0);\nconst requestedQuantity = Number(order.quantity || 1);\nconst hasEnoughStock = currentStock >= requestedQuantity;\n\nreturn [{\n  json: {\n    found: true,\n    row_number: product.json.row_number,\n    Product: product.json.Product,\n    Stock: currentStock,\n    requestedQuantity: requestedQuantity,\n    newStock: currentStock - requestedQuantity,\n    hasEnoughStock: hasEnoughStock,\n    // بيانات العميل عشان الـ Orders Sheet\n    customerName: order.name || order.customerName,\n    phone: order.phone,\n    address: order.address\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        -16
+      ],
+      "id": "71a6cb42-b010-4473-84e9-1b95b6db783f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "152dc245-ea98-4589-8421-47d0b4b6a7d1",
+              "leftValue": "={{ $json.newStock }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        -16
+      ],
+      "id": "882a888d-ead7-49fa-b38e-ea8563d64140",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1prqMsrRB-f5FLtrk5JTtuWtbctpzSflgaaTSPn0iQKw",
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1prqMsrRB-f5FLtrk5JTtuWtbctpzSflgaaTSPn0iQKw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1prqMsrRB-f5FLtrk5JTtuWtbctpzSflgaaTSPn0iQKw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product ID": "={{ $json.productId }}",
+            "Product": "={{ $json.product }}",
+            "Price": "={{ $json.price }}",
+            "Stock": "={{ $json.newStock }}"
+          },
+          "matchingColumns": [
+            "Product ID"
+          ],
+          "schema": [
+            {
+              "id": "Product ID",
+              "displayName": "Product ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Product",
+              "displayName": "Product",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Stock",
+              "displayName": "Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "391a05af-a624-4681-be93-664129e2c7dc",
+      "name": "Update row in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2FZ91ow8j2RNgZWK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1-dWfve61EEEOIsXmhdW6seGyjSAkfP2Z_JZEwkNYQFA",
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-dWfve61EEEOIsXmhdW6seGyjSAkfP2Z_JZEwkNYQFA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-dWfve61EEEOIsXmhdW6seGyjSAkfP2Z_JZEwkNYQFA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order ID": "={{ $itemIndex + 1 }}",
+            "Customer Name": "={{ $('Code in JavaScript').first().json.name }}",
+            "Phone": "={{ $('Code in JavaScript').first().json.phone }}",
+            "Address": "={{ $('Code in JavaScript').first().json.address }}",
+            "Product": "={{ $('Code in JavaScript').first().json.product }}",
+            "Quantity": "={{ $('Code in JavaScript').first().json.quantity }}",
+            "Date": "={{ $('Code in JavaScript').first().json.date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Order ID",
+              "displayName": "Order ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Product",
+              "displayName": "Product",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1008,
+        -96
+      ],
+      "id": "bddbe3e8-c1e1-490d-ae33-567a33295d6a",
+      "name": "Append row in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2FZ91ow8j2RNgZWK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1571666157",
+        "text": "=🛒 New Order Received  Order ID: {{ $json['Order ID'] }}  Customer: {{ $json['Customer Name'] }} Phone: {{ $json.Phone }} Product:{{ $json.Product }}   Quantity: {{ $json.Quantity }}  Address: {{ $json.Address }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1184,
+        -96
+      ],
+      "id": "4677cbd9-1ace-485b-ba33-93b412123df9",
+      "name": "Send a text message1",
+      "webhookId": "d368a8d0-63eb-4e9a-8894-7c25246ded42",
+      "credentials": {
+        "telegramApi": {
+          "id": "CTtiXCcHlTC8JJyY",
+          "name": "Telegram account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "{\n  \"status\": \"error\",\n  \"message\": \"Out of Stock\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        832,
+        80
+      ],
+      "id": "88d87950-bafa-4b98-88bf-2ca2537d0fbe",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        160
+      ],
+      "id": "8b3630d9-294f-48af-8cfa-93c62b0d85ec",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1prqMsrRB-f5FLtrk5JTtuWtbctpzSflgaaTSPn0iQKw",
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1prqMsrRB-f5FLtrk5JTtuWtbctpzSflgaaTSPn0iQKw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1prqMsrRB-f5FLtrk5JTtuWtbctpzSflgaaTSPn0iQKw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        352,
+        160
+      ],
+      "id": "dc1e9bc6-f037-4c1b-96d8-b0fd876dfc0c",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2FZ91ow8j2RNgZWK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b5677030-c625-40f5-92a1-5a782b8308a2",
+              "leftValue": "={{ $json.Stock }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        528,
+        176
+      ],
+      "id": "7af13856-fc4f-4b25-94cc-f6d4bc0193b0",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "sendTo": "abdelhakrana77@gmail.com",
+        "subject": "={{ $('Get row(s) in sheet1').item.json.Stock }}",
+        "emailType": "text",
+        "message": "=El stock bta3 {{ $('Get row(s) in sheet1').item.json.Product }} 2rab yenkles khales, El keemya el ba2ya:{{ $('Get row(s) in sheet1').item.json.Stock }}  bas",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        176
+      ],
+      "id": "1614fc91-5e28-499c-868f-832cdf86c3cd",
+      "name": "Send a message",
+      "webhookId": "a556c6d5-4d51-43e0-9869-1c6f7a2b3976",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vr0XA6WfBd7iVWpY",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "the operation is completed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1360,
+        -96
+      ],
+      "id": "cacaa539-133a-4f0b-b806-12902c9ce830",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "362bda37-ac6b-48bf-a83d-84f294168cc6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "944bdba27d46de7b2eaa5a4a4e34aa9768b1a8595d852422f8b953da4f1b348e"
+  },
+  "nodeGroups": [],
+  "id": "JXOYXghNeYJJN8Rd",
+  "tags": []
+}

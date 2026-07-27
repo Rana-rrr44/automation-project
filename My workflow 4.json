@@ -1,0 +1,101 @@
+{
+  "name": "My workflow 4",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4397c1e4-8d72-4982-8a38-1289e2afeb20",
+      "name": "When chat message received",
+      "webhookId": "244de9f5-3209-4398-b294-d32a44cdf26c"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "\"أنت مساعد خدمة العملاء الخاص ببراند الملابس بتاعنا. أجب على استفسارات العملاء بطريقة ودودة ومحترفة باللغة العربية، وساعدهم في اختيار الملابس وتتبع أوردراتهم.\""
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "={{ $json.chatInput }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        192,
+        -16
+      ],
+      "id": "b6e7fad5-c776-4627-8741-218cc02dda3e",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        192
+      ],
+      "id": "f5603c1f-8537-4df4-8c40-c7f802d30484",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "xdmYexOpufxgg0Eh",
+          "name": "Google Gemini(PaLM) Api account 7"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "05f71283-4646-4b25-912f-e1ea8502c071",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "944bdba27d46de7b2eaa5a4a4e34aa9768b1a8595d852422f8b953da4f1b348e"
+  },
+  "nodeGroups": [],
+  "id": "dT87nTw4FgPIZ6yw",
+  "tags": []
+}

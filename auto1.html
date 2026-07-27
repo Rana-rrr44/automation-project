@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Store</title>
+
+    <link rel="stylesheet" href="auto.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<nav>
+
+    <h2 class="logo">Fashion Store</h2>
+
+    <ul>
+
+        <li><a href="#">Home</a></li>
+
+        <li><a href="#products">Products</a></li>
+
+        <li><a href="#order">Order</a></li>
+
+    </ul>
+
+</nav>
+
+
+<header class="hero">
+
+    <div class="overlay">
+
+        <h1>Premium Clothing Collection</h1>
+
+        <p>
+            Modern Fashion for Everyone
+        </p>
+
+        <a href="#products" class="btn">
+            Shop Now
+        </a>
+
+    </div>
+
+</header>
+
+
+
+<section id="products" class="products">
+
+<h2>Our Products</h2>
+
+
+<div class="cards">
+
+
+
+
+<div class="card">
+
+<img src="images/shirt1.jpg">
+
+<h3>Black T-Shirt</h3>
+
+<p class="price">$25</p>
+
+<button onclick="selectProduct('Black T-Shirt')">
+
+Buy Now
+
+</button>
+
+</div>
+
+<div class="card">
+
+<img src="images/shirt2.jpg">
+
+<h3>Blue Jeans</h3>
+
+<p class="price">$40</p>
+
+<button onclick="selectProduct('Blue Jeans')">
+
+Buy Now
+
+</button>
+
+</div>
+
+
+
+
+
+
+
+<div class="card">
+
+<img src="images/shirt3.jpg">
+
+<h3>White Hoodie</h3>
+
+<p class="price">$50</p>
+
+<button onclick="selectProduct('White Hoodie')">
+
+Buy Now
+
+</button>
+
+</div>
+
+
+
+
+
+
+
+
+<div class="card">
+
+<img src="images/shirt4.jpg">
+
+<h3>Green Shirt</h3>
+
+<p class="price">$30</p>
+
+<button onclick="selectProduct('Green Shirt')">
+
+Buy Now
+
+</button>
+
+</div>
+
+
+
+
+
+
+
+<div class="card">
+
+<img src="images/shirt5.jpg">
+
+<h3>Gray Jacket</h3>
+
+<p class="price">$60</p>
+
+<button onclick="selectProduct('Gray Jacket')">
+
+Buy Now
+
+</button>
+
+</div>
+
+
+
+
+
+
+
+<div class="card">
+
+<img src="images/shirt6.jpg">
+
+<h3>Classic Pants</h3>
+
+<p class="price">$35</p>
+
+<button onclick="selectProduct('Classic Pants')">
+
+Buy Now
+
+</button>
+
+</div>
+
+
+
+</div>
+
+</section>
+
+
+
+
+
+
+
+<section id="order" class="order">
+
+<h2>Place Your Order</h2>
+
+<div class="form">
+
+
+
+<input
+type="text"
+id="name"
+placeholder="Full Name">
+
+
+
+<input
+type="text"
+id="phone"
+placeholder="Phone Number">
+
+
+
+<input
+type="text"
+id="address"
+placeholder="Address">
+
+
+
+<input
+type="number"
+id="quantity"
+placeholder="Quantity">
+
+
+
+<input
+type="text"
+id="product"
+placeholder="Selected Product"
+readonly>
+
+
+
+
+<button onclick="sendOrder()">
+
+Place Order
+
+</button>
+
+
+</div>
+
+</section>
+
+
+
+
+
+
+<footer>
+
+<p>
+
+© 2026 Fashion Store
+
+</p>
+
+</footer>
+
+
+
+<script src="autp.js"></script>
+<!-- n8n Embedded Chatbot -->
+<link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+<script type="module">
+  import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+  createChat({
+    webhookUrl: 'https://rana-abdelhak4.app.n8n.cloud/webhook/244de9f5-3209-4398-b294-d32a44cdf26c/chat',
+    initialMessages: [
+      'أهلاً بك! 👋 كيف يمكنني مساعدتك اليوم في متجرنا؟'
+    ],
+    i18n: {
+      en: {
+        title: 'خدمة العملاء 🛍️',
+        subtitle: 'نحن هنا لمساعدتك على مدار الساعة',
+        footer: '',
+        getStarted: 'ابدأ المحادثة',
+        inputPlaceholder: 'اكتب رسالتك هنا...',
+      },
+    },
+  });
+</script>
+</body>
+
+</html>
